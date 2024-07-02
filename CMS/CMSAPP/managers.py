@@ -4,12 +4,13 @@ class UserManager(BaseUserManager):
     use_in_migrations = True
 
     def _create_user(self,email,password,**extra_fields):
+
         if not email:
-            raise ValueError("Please enter a valid mail address")
+            raise ValueError("Please enter the mail address")
         email = self.normalize_email(email)
         user = self.model(email=email,**extra_fields)
         user.set_password(password)
-        user.save(self.db)
+        user.save(using = self.db)
         return user
     
     def create_user(self,email,password=None,**extra_fields):
