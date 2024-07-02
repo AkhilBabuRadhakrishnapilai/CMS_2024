@@ -28,44 +28,56 @@ class GenderSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
-    department = serializers.PrimaryKeyRelatedField(queryset=Department.objects.all())
-    qualification = serializers.PrimaryKeyRelatedField(queryset=Qualification.objects.all())
-    specialization = serializers.PrimaryKeyRelatedField(queryset=Specialization.objects.all())
-    gender = serializers.PrimaryKeyRelatedField(queryset=Gender.objects.all())
-    role = serializers.PrimaryKeyRelatedField(queryset=Roles.objects.all())
+    #dept
+    department = DepartmentSerializer(read_only=True)
+    department_id = serializers.PrimaryKeyRelatedField(queryset=Department.objects.all())
+    #qualification
+    qualification = QualificationSerializer(read_only = True)
+    qualification_id = serializers.PrimaryKeyRelatedField(queryset=Qualification.objects.all())
+    #specilization
+    specialization = SpecializationSerializer(read_only=True)
+    specialization_id = serializers.PrimaryKeyRelatedField(queryset=Specialization.objects.all())
+    #Gender
+    gender = GenderSerializer(read_only=True)
+    gender_id = serializers.PrimaryKeyRelatedField(queryset=Gender.objects.all())
+    #role
+    role = RolesSerializer(read_only=True)
+    role_id = serializers.PrimaryKeyRelatedField(queryset=Roles.objects.all())
 
     class Meta:
         model = User
         fields = '__all__'
 
     def create(self, validated_data):
-        department = validated_data.pop('department')
-        qualification = validated_data.pop('qualification')
-        specialization = validated_data.pop('specialization')
-        gender = validated_data.pop('gender')
-        role = validated_data.pop('role')
+        department = validated_data.pop('department_id')
+        qualification = validated_data.pop('qualification_id')
+        specialization = validated_data.pop('specialization_id')
+        gender = validated_data.pop('gender_id')
+        role = validated_data.pop('role_id')
         #for hasing the password
         password = validated_data.pop('password')
         hashed_password = make_password(password)
         validated_data['password'] = hashed_password
 
         user = User.objects.create(
-            department=department,
-            qualification=qualification,
-            specialization=specialization,
-            gender=gender,
-            role=role,
             **validated_data
         )
+        user.department = department
+        user.qualification = qualification
+        user.specialization = specialization
+        user.gender = gender
+        user.role = role
 
+        user.save()
+        
         return user
     
     def update(self,instance,validated_data):
-        department_data = validated_data.pop('department')
-        qualification_data = validated_data.pop('qualification')
-        specialization_data = validated_data.pop('specialization')
-        gender_data = validated_data.pop('gender')
-        role_data = validated_data.pop('role')
+        department_data = validated_data.pop('department_id')
+        qualification_data = validated_data.pop('qualification_id')
+        specialization_data = validated_data.pop('specialization_id')
+        gender_data = validated_data.pop('gender_id')
+        role_data = validated_data.pop('role_id')
         #for hasing the password
         password = validated_data.pop('password')
         if password:
