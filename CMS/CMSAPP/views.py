@@ -82,4 +82,39 @@ class EmployeeCRUD(APIView):
 class AdminApproval(APIView):
     pass
 
+#department
+class GetAllDepartments(APIView):
+    def get(self,request):
+        depts_db = Department.objects.all()
+        depts = DepartmentSerializer(depts_db,many=True)
+        return JsonResponse(depts.data,status=200,safe=False)
+    
+#qualification
+class GetAllQualifications(APIView):
+    def get(self,request):
+        qualification_db = Qualification.objects.all()
+        qualifications = QualificationSerializer(qualification_db,many=True)
+        return JsonResponse(qualifications.data,status=200,safe=False)
+    
+#specialization
+class GetAllSpecializations(APIView):
+    def get(self,request):
+        specialization_db = Specialization.objects.all()
+        specialization = SpecializationSerializer(specialization_db,many=True)
+        return JsonResponse(specialization.data,status=200,safe=False)
+    
+#gender
+class GetAllGenders(APIView):
+    def get(self,request):
+        gender_db = Gender.objects.all()
+        gender = GenderSerializer(gender_db,many=True)
+        return JsonResponse(gender.data,status=200,safe=False)
+    
+#role
+class GetAllRoles(APIView):
+    def get(self,request):
+        roles_db = Roles.objects.all()
+        roles = RolesSerializer(roles_db,many=True)
+        return JsonResponse(roles.data,status=200,safe=False)
+
 
