@@ -3,19 +3,20 @@ from .managers import UserManager
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin,Group,Permission
 from django.dispatch import receiver
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save,pre_save
 from rest_framework.authtoken.models import Token
 from django.conf import settings
+from django.contrib.auth.hashers import make_password
 # Create your models here.
 
 #admin
 #departments
-class Department(models.Model):
-    department_name = models.CharField(max_length=250,blank=False)
-    is_active = models.BooleanField(default=True)
+# class Department(models.Model):
+#     department_name = models.CharField(max_length=250,blank=False)
+#     is_active = models.BooleanField(default=True)
 
-    def __str__(self):
-        return self.department_name
+#     def __str__(self):
+#         return self.department_name
 
 class Qualification(models.Model):
     qualification = models.CharField(max_length=250,null=False,blank=False)
@@ -34,12 +35,14 @@ class Roles(models.Model):
 #specialization
 class Specialization(models.Model):
     specialization = models.CharField(max_length=100,blank=False)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.specialization
 
 class Gender(models.Model):
     gender = models.CharField(max_length=50)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.gender
@@ -51,26 +54,30 @@ class User(AbstractBaseUser,PermissionsMixin):
     last_name = models.CharField(max_length=30,blank=False,null=True)
     address = models.CharField(max_length= 250,blank=False)
     dob = models.DateField(null=False,blank=False)
+    contact_number = models.CharField(max_length=10,null=False,blank=True,default=0)
     gender = models.ForeignKey(Gender,on_delete=models.CASCADE,related_name="genders")
-    department = models.ForeignKey(Department,on_delete=models.CASCADE,related_name="departments")
     qualification = models.ForeignKey(Qualification,on_delete=models.CASCADE,related_name="qualifications")
-    specialization = models.ForeignKey(Specialization,on_delete=models.CASCADE,related_name="specialisations")
     date_of_joining = models.DateField(null=False,blank=False)
     email = models.EmailField(max_length=50,null=False,blank=False,unique=True)
-    password = models.CharField(max_length=128,blank=False)
+    password = models.CharField(max_length=128,blank=False,default='clinics')
     role = models.ForeignKey(Roles,null=False,on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
     created_date = models.DateField(null=False,auto_now_add=True)
     groups = models.ManyToManyField(Group,related_name='custom_user_groups',blank=True)
     user_permissions = models.ManyToManyField(Permission,related_name='custom_user_permissions',blank=True)
+    # specialization = models.ForeignKey(Specialization,on_delete=models.CASCADE,related_name="specializations")
+    # fees = models.PositiveSmallIntegerField(null=False,blank=False,default=0)
 
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS =['first_name','last_name','dob','password','is_staff']
 
+
     def save(self,*args,**kwargs):
+        if self._state.adding or 'pbkdf2_sha256$' not in self.password:
+            self.password = make_password(self.password)
 
         if not self.emp_id:
             last_emp_id = User.objects.all().order_by('emp_id').last()
@@ -86,12 +93,12 @@ class User(AbstractBaseUser,PermissionsMixin):
         return f'User {self.emp_id} - {self.first_name}'
 
 
-#doctors
+# doctors
 class Doctors(models.Model):
     doc_id = models.AutoField(primary_key=True)
-    user_id = models.ForeignKey(User,on_delete=models.CASCADE,related_name="users")
-    dept = models.ForeignKey(Department,on_delete=models.CASCADE,related_name="depts")
+    user_id = models.OneToOneField(User,on_delete=models.CASCADE,related_name="users")
     specialization = models.ForeignKey(Specialization,on_delete=models.CASCADE,related_name="specializations")
+    fees = models.PositiveSmallIntegerField(null=False,blank=False,default=0)
 
     def __str__(self):
         return self.user_id.first_name
@@ -102,3 +109,8 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
 
+#hashing password
+# @receiver(pre_save,sender=User)
+# def hash_password(sender,instance,**kwargs):
+#     if instance.pk is None or not instance.password.startswith('pbkdf2_sha256$'):
+#         instance.password = make_password(instance.password)

@@ -8,7 +8,7 @@ urlpatterns = [
     path('disable/<str:emp_id>',EmployeeCRUD.as_view()),
     path('login',Login.as_view()),
     # departments
-    path('departments/',GetAllDepartments.as_view()),
+    # path('departments/',GetAllDepartments.as_view()),
     #qualification
     path('qualifications/',GetAllQualifications.as_view()),
     #specialization
@@ -16,5 +16,7 @@ urlpatterns = [
     #gender
     path('gender/',GetAllGenders.as_view()),
     #role
-    path('roles/',GetAllRoles.as_view())
+    path('roles/',GetAllRoles.as_view()),
+    #change password
+    path('changepassword/',ChangePassword.as_view())
 ]

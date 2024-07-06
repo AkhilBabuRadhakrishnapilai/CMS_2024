@@ -51,14 +51,29 @@ class EmployeeCRUD(APIView):
         employee_db = User.objects.all()
         employee = UserSerializer(employee_db,many=True)
         return JsonResponse(employee.data,status = 200,safe=False)
-    
+
     def post(self,request):
-        employee = UserSerializer(data=request.data)
-        if employee.is_valid():
-            employee.save()
-            return HttpResponse(employee.data,status = 200)
-        return HttpResponse(employee.errors,status = 400)
-    
+        role_id = request.data.get('role_id')
+        employee_ser = UserSerializer(data=request.data)
+        
+        if employee_ser.is_valid():
+            employee = employee_ser.save()
+            if role_id == 3:  
+                doctor_data = {
+                    'user_id': employee.emp_id,
+                    'specialization': request.data.get('specialization_id'),
+                    'fees': request.data.get('fees', 0)
+                }
+                doctor = DoctorsSerializer(data=doctor_data)
+                if doctor.is_valid():
+                    doctor.save()
+                    return JsonResponse(doctor.data, status=201, safe=False)
+                else:
+                    employee.delete()
+                    return HttpResponse(doctor.errors, status=400)
+            return JsonResponse(employee_ser.data, status=201, safe=False)
+        return HttpResponse(employee_ser.errors, status=400)
+            
     def put(self,request,emp_id):
         try:
             employee_db = User.objects.get(pk=emp_id)
@@ -66,8 +81,19 @@ class EmployeeCRUD(APIView):
             return JsonResponse({"error":"Employee not Found"},status = 404)
         employee = UserSerializer(employee_db,data=request.data,partial=True)
         if employee.is_valid():
-            employee.save()
-            return HttpResponse(employee.data,status=200)
+            emp=employee.save()
+            if emp.role.id == 3: 
+                doc = Doctors.objects.get(user_id=emp_id) 
+                doc_data={
+                    'specialization': request.data.get('specialization_id'),
+                    'fees': request.data.get('fees', 0)
+                }
+                doc_ser=DoctorsSerializer(doc,data=doc_data,partial=True)
+                if doc_ser.is_valid():
+                    doc_ser.save()
+                    return JsonResponse(doc_ser.data,status=200)
+                return JsonResponse(doc_ser.errors,status=400)
+            return JsonResponse(employee.data,status=200)
         return HttpResponse(employee.errors,status = 400)
     
     def delete(self,request,emp_id):
@@ -82,12 +108,6 @@ class EmployeeCRUD(APIView):
 class AdminApproval(APIView):
     pass
 
-#department
-class GetAllDepartments(APIView):
-    def get(self,request):
-        depts_db = Department.objects.all()
-        depts = DepartmentSerializer(depts_db,many=True)
-        return JsonResponse(depts.data,status=200,safe=False)
     
 #qualification
 class GetAllQualifications(APIView):
@@ -113,8 +133,22 @@ class GetAllGenders(APIView):
 #role
 class GetAllRoles(APIView):
     def get(self,request):
-        roles_db = Roles.objects.all()
-        roles = RolesSerializer(roles_db,many=True)
-        return JsonResponse(roles.data,status=200,safe=False)
+        try:
+            roles_db = Roles.objects.all()
+            roles = RolesSerializer(roles_db,many=True)
+            return JsonResponse(roles.data,status=200,safe=False)
+        except:
+            return HttpResponse(roles.error_messages,status=400)
 
-
+class ChangePassword(APIView):
+    def patch(self,request,email):
+        try:
+            user_db = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return JsonResponse({"employee not found"},status=400)
+        password = request.data.get('password')
+        if password:
+            user_db.password = make_password(password)
+            user_db.save()
+            return JsonResponse(user_db.data,status=200)
+        return HttpResponse(user_db.errors,status=400)
