@@ -58,12 +58,14 @@ class EmployeeCRUD(APIView):
         
         if employee_ser.is_valid():
             employee = employee_ser.save()
+            print(role_id)
             if role_id == 3:  
                 doctor_data = {
                     'user_id': employee.emp_id,
                     'specialization': request.data.get('specialization_id'),
                     'fees': request.data.get('fees', 0)
                 }
+                print(doctor_data)
                 doctor = DoctorsSerializer(data=doctor_data)
                 if doctor.is_valid():
                     doctor.save()
@@ -82,8 +84,12 @@ class EmployeeCRUD(APIView):
         employee = UserSerializer(employee_db,data=request.data,partial=True)
         if employee.is_valid():
             emp=employee.save()
-            if emp.role.id == 3: 
-                doc = Doctors.objects.get(user_id=emp_id) 
+            if emp.role.id == 3:
+                print(emp_id)
+                try: 
+                    doc = Doctors.objects.get(user_id=emp_id)
+                except Doctors.DoesNotExist:
+                    return JsonResponse({'error':"Doctor Not Found"},status=400)
                 doc_data={
                     'specialization': request.data.get('specialization_id'),
                     'fees': request.data.get('fees', 0)
