@@ -59,12 +59,15 @@ class EmployeeCRUD(APIView):
         if employee_ser.is_valid():
             employee = employee_ser.save()
             print(role_id)
-            if role_id == 3:  
+            print(type(role_id))
+            if role_id == "3":
+                print("1st here")
                 doctor_data = {
                     'user_id': employee.emp_id,
                     'specialization': request.data.get('specialization_id'),
                     'fees': request.data.get('fees', 0)
                 }
+                print("2nd here")
                 print(doctor_data)
                 doctor = DoctorsSerializer(data=doctor_data)
                 if doctor.is_valid():
@@ -94,6 +97,7 @@ class EmployeeCRUD(APIView):
                     'specialization': request.data.get('specialization_id'),
                     'fees': request.data.get('fees', 0)
                 }
+                print("edit done")
                 doc_ser=DoctorsSerializer(doc,data=doc_data,partial=True)
                 if doc_ser.is_valid():
                     doc_ser.save()
