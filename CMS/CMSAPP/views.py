@@ -22,6 +22,7 @@ class Login(APIView):
                 token = Token.objects.get(user=auth_user)
                 #for getting the user as an object
                 user_data = UserSerializer(auth_user).data
+                print("hey hey")
                 response ={
                     "status":status.HTTP_200_OK,
                     "message":"success",
@@ -48,7 +49,7 @@ class Login(APIView):
 class EmployeeCRUD(APIView):
     
     def get(self,request):
-        employee_db = User.objects.all()
+        employee_db = User.objects.filter(is_active=True)
         employee = UserSerializer(employee_db,many=True)
         return JsonResponse(employee.data,status = 200,safe=False)
 
@@ -87,7 +88,7 @@ class EmployeeCRUD(APIView):
         employee = UserSerializer(employee_db,data=request.data,partial=True)
         if employee.is_valid():
             emp=employee.save()
-            if emp.role.id == 3:
+            if emp.role.id == "3":
                 print(emp_id)
                 try: 
                     doc = Doctors.objects.get(user_id=emp_id)
