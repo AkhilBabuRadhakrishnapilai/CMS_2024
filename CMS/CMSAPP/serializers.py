@@ -124,3 +124,77 @@ class LoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email','password']
+
+
+
+#stock_management serializers
+class SupplierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Supplier
+        fields = '__all__'
+class OrderSerializer(serializers.ModelSerializer):
+    suppliee=SupplierSerializer(read_only=True)
+    class Meta:
+        model = Order
+        fields = ('id','item_name','category','ordered_quantity','supplier','price','order_date','expected_delivery_date','status','suppliee')
+    def create(self, validated_data):
+        supplier = validated_data.pop('supplier', None)
+        order = (Order.objects.create(**validated_data,supplier=supplier))
+        return order
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['suppliee'] = SupplierSerializer(instance.supplier).data
+
+        return rep
+    
+
+
+    
+class EquipmentSerializer(serializers.ModelSerializer):
+    suppliee=SupplierSerializer(read_only=True)
+    class Meta:
+        model = Equipment
+        fields = ('id','name','description','supplier','quantity','reorder_level','purchase_date','warranty_expiry','suppliee')
+    def create(self, validated_data):
+        supplier = validated_data.pop('supplier', None)
+        order = (Equipment.objects.create(**validated_data,supplier=supplier))
+        return order
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['suppliee'] = SupplierSerializer(instance.supplier).data
+
+        return rep
+class MiscellaneousItemSerializer(serializers.ModelSerializer):
+    suppliee=SupplierSerializer(read_only=True)
+    class Meta:
+        model = MiscellaneousItem
+        fields = ('id','name','description','supplier','quantity','reorder_level','suppliee')
+    def create(self, validated_data):
+        supplier = validated_data.pop('supplier', None)
+        order = (MiscellaneousItem.objects.create(**validated_data,supplier=supplier))
+        return order
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['suppliee'] = SupplierSerializer(instance.supplier).data
+
+        return rep
+class MedSerializer(serializers.ModelSerializer):
+    suppliee=SupplierSerializer(read_only=True)
+    class Meta:
+        model = Medicine
+        fields = ('id','name','generic_name','category','type_medicine',
+                  'description','storage_requirements','stock','unit_price',
+                  'date_created','expiry_date','reorder_level','supplier','suppliee')
+    def create(self, validated_data):
+        supplier = validated_data.pop('supplier', None)
+        order = (Medicine.objects.create(**validated_data,supplier=supplier))
+        return order
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['suppliee'] = SupplierSerializer(instance.supplier).data
+
+        return rep
