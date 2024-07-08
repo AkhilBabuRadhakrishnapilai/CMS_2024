@@ -7,17 +7,12 @@ from django.db.models.signals import post_save,pre_save
 from rest_framework.authtoken.models import Token
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
+
+from django.contrib.auth.hashers import check_password as django_check_password
+
 # Create your models here.
 
 #admin
-#departments
-# class Department(models.Model):
-#     department_name = models.CharField(max_length=250,blank=False)
-#     is_active = models.BooleanField(default=True)
-
-#     def __str__(self):
-#         return self.department_name
-
 class Qualification(models.Model):
     qualification = models.CharField(max_length=250,null=False,blank=False)
     is_active = models.BooleanField(default=True)
@@ -57,17 +52,15 @@ class User(AbstractBaseUser,PermissionsMixin):
     contact_number = models.CharField(max_length=10,null=False,blank=True,default=0)
     gender = models.ForeignKey(Gender,on_delete=models.CASCADE,related_name="genders")
     qualification = models.ForeignKey(Qualification,on_delete=models.CASCADE,related_name="qualifications")
-    date_of_joining = models.DateField(null=False,blank=False)
+    date_of_joining = models.DateField(null=True,blank=False)
     email = models.EmailField(max_length=50,null=False,blank=False,unique=True)
-    password = models.CharField(max_length=128,blank=False,default='clinics')
+    password = models.CharField(max_length=128,blank=False)
     role = models.ForeignKey(Roles,null=False,on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
     created_date = models.DateField(null=False,auto_now_add=True)
     groups = models.ManyToManyField(Group,related_name='custom_user_groups',blank=True)
     user_permissions = models.ManyToManyField(Permission,related_name='custom_user_permissions',blank=True)
-    # specialization = models.ForeignKey(Specialization,on_delete=models.CASCADE,related_name="specializations")
-    # fees = models.PositiveSmallIntegerField(null=False,blank=False,default=0)
 
     objects = UserManager()
 
@@ -75,9 +68,15 @@ class User(AbstractBaseUser,PermissionsMixin):
     REQUIRED_FIELDS =['first_name','last_name','dob','password','is_staff']
 
 
+    def check_password(self, raw_password):
+        return super().check_password(raw_password)   
+
+    
+
     def save(self,*args,**kwargs):
-        if self._state.adding or 'pbkdf2_sha256$' not in self.password:
-            self.password = make_password(self.password)
+        # Only hash the password if it's being created or changed
+        if self.pk is None:
+            self.set_password(self.password)  # Hash password for new users
 
         if not self.emp_id:
             last_emp_id = User.objects.all().order_by('emp_id').last()
