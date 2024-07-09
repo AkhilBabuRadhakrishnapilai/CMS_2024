@@ -54,7 +54,7 @@ class User(AbstractBaseUser,PermissionsMixin):
     qualification = models.ForeignKey(Qualification,on_delete=models.CASCADE,related_name="qualifications")
     date_of_joining = models.DateField(null=True,blank=False)
     email = models.EmailField(max_length=50,null=False,blank=False,unique=True)
-    password = models.CharField(max_length=128,blank=False)
+    password = models.CharField(max_length=128,blank=False,default="clinics")
     role = models.ForeignKey(Roles,null=False,on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
