@@ -210,36 +210,36 @@ class BookAppointment(models.Model):
         super().save(*args, **kwargs)
 
 
-@receiver(post_save, sender=BookAppointment)
-def send_token_on_appointment_save(sender, instance, created, **kwargs):
-    if created:
-        send_token_to_patient(instance)
+# @receiver(post_save, sender=BookAppointment)
+# def send_token_on_appointment_save(sender, instance, created, **kwargs):
+#     if created:
+#         send_token_to_patient(instance)
 
 
-def send_token_to_patient(appointment):
-    account_sid = 'AC9561c6cec28f103fe4cbbf0e58edd3b2'
-    auth_token = '6a986f3297bb2e554c4e5c1d66143da7'
-    client = Client(account_sid, auth_token)
+# def send_token_to_patient(appointment):
+#     account_sid = 'AC9561c6cec28f103fe4cbbf0e58edd3b2'
+#     auth_token = '6a986f3297bb2e554c4e5c1d66143da7'
+#     client = Client(account_sid, auth_token)
 
-    message = None  # Initialize the variable to avoid UnboundLocalError
-    try:
-        if appointment.patient is not None and appointment.patient.mobile is not None:
-            mobile_number = phonenumbers.parse(appointment.patient.mobile, "IN")
-            formatted_number = phonenumbers.format_number(mobile_number, phonenumbers.PhoneNumberFormat.E164)
-            message = client.messages.create(
-                body=f"Dear {appointment.patient.name}, your appointment token is {appointment.token}. Appointment with Dr. {appointment.doctor} on {appointment.appointment_date} at {appointment.time_slot}.",
-                from_='+13603104099',  # Your Twilio number
-                to=formatted_number
-            )
-        else:
-            if appointment.patient is None:
-                print("Appointment patient is missing.")
-            elif appointment.patient.mobile is None:
-                print("Patient's mobile number is missing.")
-    except phonenumbers.NumberParseException:
-        raise ValidationError(f"Invalid phone number: {appointment.patient.mobile}")
+#     message = None  # Initialize the variable to avoid UnboundLocalError
+#     try:
+#         if appointment.patient is not None and appointment.patient.mobile is not None:
+#             mobile_number = phonenumbers.parse(appointment.patient.mobile, "IN")
+#             formatted_number = phonenumbers.format_number(mobile_number, phonenumbers.PhoneNumberFormat.E164)
+#             message = client.messages.create(
+#                 body=f"Dear {appointment.patient.name}, your appointment token is {appointment.token}. Appointment with Dr. {appointment.doctor} on {appointment.appointment_date} at {appointment.time_slot}.",
+#                 from_='+13603104099',  # Your Twilio number
+#                 to=formatted_number
+#             )
+#         else:
+#             if appointment.patient is None:
+#                 print("Appointment patient is missing.")
+#             elif appointment.patient.mobile is None:
+#                 print("Patient's mobile number is missing.")
+#     except phonenumbers.NumberParseException:
+#         raise ValidationError(f"Invalid phone number: {appointment.patient.mobile}")
 
-    if message:
-        return message.account_sid
-    else:
-        return None  # Handle this case appropriately
+#     if message:
+#         return message.account_sid
+#     else:
+#         return None  # Handle this case appropriately
