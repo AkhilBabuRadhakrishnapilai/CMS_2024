@@ -13,7 +13,7 @@ from rest_framework.response import Response
 class Login(APIView):
     def post(self,request):
         employee = LoginSerializer(data=request.data)
-        if employee.is_valid:
+        if employee.is_valid():
             email = employee.validated_data["email"]
             password = employee.validated_data["password"]
             auth_user = authenticate(request,email=email,password=password)
