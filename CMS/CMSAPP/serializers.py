@@ -111,3 +111,38 @@ class LoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email','password','role']
+        
+# receptionist serializers
+class PatientDetailsSerializer(serializers.ModelSerializer):
+    gender = serializers.PrimaryKeyRelatedField(queryset=Gender.objects.all())
+    class Meta:
+        model = patient_details
+        fields = '__all__'
+
+class BookAppointmentSerializer(serializers.ModelSerializer):
+    patient = serializers.PrimaryKeyRelatedField(queryset=patient_details.objects.all())
+    specialization = serializers.PrimaryKeyRelatedField(queryset=Specialization.objects.all())
+    doctor = serializers.PrimaryKeyRelatedField(queryset=Doctors.objects.all())
+
+    class Meta:
+        model = BookAppointment
+        fields = '__all__'
+
+    def create(self, validated_data):
+        return BookAppointment.objects.create(**validated_data)
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['patient'] = PatientDetailsSerializer(instance.patient).data  # Serialize patient details separately if needed
+        rep['specialization'] = SpecializationSerializer(instance.specialization).data
+        rep['doctor'] = DoctorsSerializer(instance.doctor).data
+        return rep
+
+    def update(self, instance, validated_data):
+        instance.patient = validated_data.get('patient', instance.patient)
+        instance.specialization = validated_data.get('specialization', instance.specialization)
+        instance.doctor = validated_data.get('doctor', instance.doctor)
+        instance.appointment_date = validated_data.get('appointment_date', instance.appointment_date)
+        instance.time_slot = validated_data.get('time_slot', instance.time_slot)
+        instance.is_active = validated_data.get('is_active', instance.is_active)
+        instance.save()
+        return instance

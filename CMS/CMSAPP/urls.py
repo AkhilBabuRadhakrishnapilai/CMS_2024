@@ -18,5 +18,17 @@ urlpatterns = [
     #role
     path('roles/',GetAllRoles.as_view()),
     #change password
-    path('changepassword/',ChangePassword.as_view())
+    path('changepassword/',ChangePassword.as_view()),
+    # receptionist urls
+    path('patient_list',PatientListView.as_view()),
+    path('patient_list/<str:opid>',GetOp.as_view()),
+    path('patient_info/<int:passed_id>',PatientInfoView.as_view()),
+    # path('search_patient/<int:search_Patient>',search_patient),
+    path('search_info/<str:search_patient>',SearchPatientView.as_view()),
+    path('appointment_list',AppointmentListView.as_view()),
+    path('appointment_info/<int:passed_id>',AppointmentInfoView.as_view()),
+    path('search_appointment/<str:search_appoint>',SearchAppointmentView.as_view()),
+    path('specialization',SpecializationList.as_view()),
+    path('doctors',DoctorList.as_view()),
+    path('token',GetToken.as_view())
 ]

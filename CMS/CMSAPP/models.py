@@ -1,11 +1,17 @@
 from django.db import models
+from django.utils import timezone
 from .managers import UserManager
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin,Group,Permission
 from django.dispatch import receiver
 from django.db.models.signals import post_save,pre_save
 from rest_framework.authtoken.models import Token
+from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from twilio.rest import Client
+import phonenumbers
 from django.contrib.auth.hashers import make_password
 
 from django.contrib.auth.hashers import check_password as django_check_password
@@ -113,3 +119,127 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 # def hash_password(sender,instance,**kwargs):
 #     if instance.pk is None or not instance.password.startswith('pbkdf2_sha256$'):
 #         instance.password = make_password(instance.password)
+
+# receptionist models
+
+class Counter(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    count = models.PositiveIntegerField(default=0)
+
+def get_next_counter(name):
+    counter, created = Counter.objects.get_or_create(name=name)
+    counter.count += 1
+    counter.save()
+    return counter.count
+
+def generate_opid():
+    count = get_next_counter('patient_opid')
+    return f"OP_{count:02d}"
+
+def generate_token():
+    count = get_next_counter('appointment_token')
+    return f"Token {count}"
+
+class patient_details(models.Model):
+    BLOOD_GROUP_CHOICES = [
+        ('A+', 'A+'),
+        ('A-', 'A-'),
+        ('B+', 'B+'),
+        ('B-', 'B-'),
+        ('AB+', 'AB+'),
+        ('AB-', 'AB-'),
+        ('O+', 'O+'),
+        ('O-', 'O-'),
+    ]
+    opid = models.CharField(max_length=10, default=generate_opid, unique=True, editable=False)
+    name = models.CharField(max_length=50, null=True)
+    gender = models.ForeignKey(Gender,on_delete=models.CASCADE,related_name="genders")
+    dob = models.DateField(null=True, blank=True)  # Date of birth
+    age = models.PositiveIntegerField(null=True, blank=True)  # Age
+    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES, null=True, blank=True)
+    mobile = models.CharField(max_length=15, null=True, blank=True)
+    emergency_contact = models.CharField(max_length=15, null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    is_active = models.BooleanField(default=True, null=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.opid})"
+
+    def save(self, *args, **kwargs):
+        # Calculate age if dob is provided
+        if self.dob:
+            self.age = timezone.now().year - self.dob.year
+        super(patient_details, self).save(*args, **kwargs)
+
+
+class BookAppointment(models.Model):
+    TIME_SLOT_CHOICES = [
+        ('09:00-09:30', '09:00-09:30 AM'),
+        ('09:30-10:00', '09:30-10:00 AM'),
+        ('10:00-10:30', '10:00-10:30 AM'),
+        ('11:00-11:30', '11:30-12:00 PM')
+        # Add more time slots as needed
+    ]
+    
+    patient = models.ForeignKey(patient_details, related_name='appointments', on_delete=models.CASCADE, null=True)
+    specialization = models.ForeignKey(Specialization, on_delete=models.CASCADE, related_name="booked_appointments")
+    doctor =  models.ForeignKey(Doctors,related_name='doctor',on_delete=models.CASCADE,null=True)
+    appointment_date = models.DateField()
+    time_slot = models.CharField(max_length=11, choices=TIME_SLOT_CHOICES, null=True)
+    token = models.CharField(max_length=20, default=generate_token, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True, null=True)
+
+    def __str__(self):
+        patient_name = self.patient.name if self.patient else 'Unknown Patient'
+        doctor_name = self.doctor.user_id.first_name if self.doctor and self.doctor.user_id else 'Unknown Doctor'
+        return f"Appointment for {patient_name} with Dr. {doctor_name} on {self.appointment_date} at {self.time_slot}"
+    
+    def save(self, *args, **kwargs):
+        # Check if there are already 5 appointments for the given time slot
+        existing_appointments = BookAppointment.objects.filter(
+            appointment_date=self.appointment_date,
+            time_slot=self.time_slot
+        ).count()
+        
+        if (existing_appointments >= 5) and self.is_active:
+            raise ValidationError(f"The time slot {self.time_slot} on {self.appointment_date} is fully booked.")
+        
+        super().save(*args, **kwargs)
+
+
+@receiver(post_save, sender=BookAppointment)
+def send_token_on_appointment_save(sender, instance, created, **kwargs):
+    if created:
+        send_token_to_patient(instance)
+
+
+def send_token_to_patient(appointment):
+    account_sid = 'AC9561c6cec28f103fe4cbbf0e58edd3b2'
+    auth_token = '6a986f3297bb2e554c4e5c1d66143da7'
+    client = Client(account_sid, auth_token)
+
+    message = None  # Initialize the variable to avoid UnboundLocalError
+    try:
+        if appointment.patient is not None and appointment.patient.mobile is not None:
+            mobile_number = phonenumbers.parse(appointment.patient.mobile, "IN")
+            formatted_number = phonenumbers.format_number(mobile_number, phonenumbers.PhoneNumberFormat.E164)
+            message = client.messages.create(
+                body=f"Dear {appointment.patient.name}, your appointment token is {appointment.token}. Appointment with Dr. {appointment.doctor} on {appointment.appointment_date} at {appointment.time_slot}.",
+                from_='+13603104099',  # Your Twilio number
+                to=formatted_number
+            )
+        else:
+            if appointment.patient is None:
+                print("Appointment patient is missing.")
+            elif appointment.patient.mobile is None:
+                print("Patient's mobile number is missing.")
+    except phonenumbers.NumberParseException:
+        raise ValidationError(f"Invalid phone number: {appointment.patient.mobile}")
+
+    if message:
+        return message.account_sid
+    else:
+        return None  # Handle this case appropriately
