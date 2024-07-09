@@ -111,3 +111,112 @@ class LoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email','password','role']
+
+
+
+#DoctorSerializer
+
+class DiagnosisSerializer(serializers.ModelSerializer):
+    appointment = serializers.PrimaryKeyRelatedField(queryset=BookAppointment.objects.all())
+    patient = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Diagnosis
+        fields = '__all__'
+
+    def create(self, validated_data):
+        # Directly use the appointment instance
+        diagnosis = Diagnosis.objects.create(**validated_data)
+        return diagnosis
+
+    def update(self, instance, validated_data):
+        appointment_data = validated_data.pop('appointment', None)
+        if appointment_data:
+            instance.appointment = appointment_data
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+    def get_patient(self, obj):
+        return PatientDetailSerializer(obj.appointment.patient).data
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['appointment'] = BookAppointmentSerializer(instance.appointment).data
+        representation['patient'] = representation['appointment']['patient']  # Directly assign patient from appointment
+        return representation
+    
+class TestPrescribedSerializer(serializers.ModelSerializer):
+    labtests = serializers.PrimaryKeyRelatedField(queryset=Diagnosis.objects.all())
+    patient = serializers.SerializerMethodField()
+    lab_tests = serializers.PrimaryKeyRelatedField(queryset=NewTest.objects.all(), many=True, write_only=True)
+    lab_tests_details = NewTest_Serializer(many=True, read_only=True, source='lab_tests')
+
+    class Meta:
+        model = TestPrescribed
+        fields = '__all__'
+
+    def create(self, validated_data):
+        lab_tests_data = validated_data.pop('lab_tests')
+        test_prescribed = TestPrescribed.objects.create(**validated_data)
+        test_prescribed.lab_tests.set(lab_tests_data)
+        return test_prescribed
+
+    def update(self, instance, validated_data):
+        lab_tests_data = validated_data.pop('lab_tests', None)
+        if lab_tests_data:
+            instance.lab_tests.set(lab_tests_data)
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+    def get_patient(self, obj):
+        # Access the patient through the appointment in the Diagnosis model
+        return PatientDetailSerializer(obj.labtests.appointment.patient).data
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['labtests'] = DiagnosisSerializer(instance.labtests).data
+        representation['patient'] = representation['labtests']['appointment']['patient']
+        return representation
+    
+
+class MedPrescribedSerializer(serializers.ModelSerializer):
+    med = serializers.PrimaryKeyRelatedField(queryset=Diagnosis.objects.all())
+    patient = serializers.SerializerMethodField()
+    med_list = serializers.PrimaryKeyRelatedField(queryset=Medicine.objects.all(), many=True, write_only=True)
+    med_list_details = Medicine_Serializer(many=True, read_only=True, source='med_list')
+
+    class Meta:
+        model = MedPrescribed
+        fields = '__all__'
+
+    def create(self, validated_data):
+        med_list_data = validated_data.pop('med_list')
+        med_prescribed = MedPrescribed.objects.create(**validated_data)
+        med_prescribed.med_list.set(med_list_data)
+        return med_prescribed
+    
+    def update(self, instance, validated_data):
+        med_list_data = validated_data.pop('med_list', None)
+        if med_list_data:
+            instance.med_list.set(med_list_data)
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+    
+    def get_patient(self, obj):
+        return PatientDetailSerializer(obj.med.appointment.patient).data
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['med'] = DiagnosisSerializer(instance.med).data
+        representation['patient'] = representation['med']['appointment']['patient']
+        representation['med_list'] = Medicine_Serializer(instance.med_list.all(), many=True).data
+        return representation
