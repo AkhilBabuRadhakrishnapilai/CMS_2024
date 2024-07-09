@@ -8,6 +8,13 @@ admin.site.register(Specialization)
 admin.site.register(Doctors)
 admin.site.register(Roles)
 admin.site.register(Gender)
+admin.site.register(Supplier)
+admin.site.register(Order)
+
+admin.site.register(Equipment)
+admin.site.register(MiscellaneousItem)
+admin.site.register(Medicine)
+
 admin.site.register(patient_details)
 admin.site.register(BookAppointment)
 admin.site.register(Counter)

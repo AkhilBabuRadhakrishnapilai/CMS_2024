@@ -113,13 +113,84 @@ class Doctors(models.Model):
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+        
+#stock_management models
+class Supplier(models.Model):
+    name = models.CharField(max_length=100)
+    address = models.TextField()
+    phone = models.CharField(max_length=20)
+    email = models.EmailField()
+    is_active =models.BooleanField(default=True,null=False)
 
-#hashing password
-# @receiver(pre_save,sender=User)
-# def hash_password(sender,instance,**kwargs):
-#     if instance.pk is None or not instance.password.startswith('pbkdf2_sha256$'):
-#         instance.password = make_password(instance.password)
+    def __str__(self):
+        return self.name
+    
+class Order(models.Model):
+    ORDER_STATUS = (
+        ('PENDING', 'Pending'),
+        ('RECEIVED', 'Received'),
+        ('CANCELLED', 'Cancelled'),
+    )
+    item_name = models.CharField(max_length=100,null=True)
+    category = models.CharField(max_length=100,null=True)
+    ordered_quantity = models.PositiveIntegerField(null=True)
+    supplier = models.ForeignKey('Supplier', on_delete=models.CASCADE)
+    price = models.DecimalField(max_digits=10, decimal_places=2,null=True)
+    order_date = models.DateField(auto_now_add=True)
+    expected_delivery_date = models.DateField()
+    status = models.CharField(max_length=10, choices=ORDER_STATUS, default='PENDING')
+    is_active =models.BooleanField(default=True,null=False)
+    def __str__(self):
+        return f"Order {self.id} - {self.supplier.name}"
+    
 
+
+class Equipment(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    reorder_level = models.IntegerField()
+    purchase_date = models.DateField()
+    warranty_expiry = models.DateField()
+    is_active =models.BooleanField(default=True,null=False)
+
+    def __str__(self):
+        return self.name
+
+    def is_below_reorder_level(self):
+        return self.quantity <= self.reorder_level
+    
+class MiscellaneousItem(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    reorder_level = models.IntegerField()
+    is_active =models.BooleanField(default=True,null=False)
+
+    def __str__(self):
+        return self.name
+
+    def is_below_reorder_level(self):
+        return self.quantity <= self.reorder_level
+class Medicine(models.Model):
+    name = models.CharField(max_length=100)
+    generic_name = models.CharField(max_length=100)
+    category = models.CharField(max_length=100)
+    type_medicine = models.CharField(max_length=50)
+    description = models.TextField(blank=True, null=True)
+    storage_requirements = models.CharField(max_length=255)
+    stock = models.IntegerField()
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    date_created = models.DateField(auto_now_add=True)
+    expiry_date = models.DateField()
+    reorder_level = models.IntegerField(null=True, blank=True, default=0)
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    is_active =models.BooleanField(default=True,null=False)
+    def __str__(self):
+        return self.name
+    
 # receptionist models
 
 class Counter(models.Model):
