@@ -105,11 +105,11 @@ class DoctorsSerializer(serializers.ModelSerializer):
         model = Doctors
         fields = '__all__'
 
-class DoctorSerializer(serializers.ModelSerializer):
-    user_id = UserSerializer(read_only=True)
-    class Meta:
-        model = Doctors
-        fields = '__all__'
+# class DoctorSerializer(serializers.ModelSerializer):
+#     user_id = UserSerializer(read_only=True)
+#     class Meta:
+#         model = Doctors
+#         fields = '__all__'
 
 class PatientDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -132,7 +132,7 @@ class PatientDetailSerializer(serializers.ModelSerializer):
 class BookAppointmentSerializer(serializers.ModelSerializer):
     patient = PatientDetailSerializer(read_only=True)
     specialization = SpecializationSerializer(read_only=True)
-    doctor = DoctorsSerializer(read_only=True)
+    doctor = UserSerializer(read_only=True)
 
     class Meta:
         model = BookAppointment
