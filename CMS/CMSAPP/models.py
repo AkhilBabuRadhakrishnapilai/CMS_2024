@@ -281,7 +281,7 @@ class BookAppointment(models.Model):
     
     patient = models.ForeignKey(patient_details, related_name='appointments', on_delete=models.CASCADE, null=True)
     specialization = models.ForeignKey(Specialization, on_delete=models.CASCADE, related_name="booked_appointments")
-    doctor =  models.ForeignKey(Doctors,related_name='doctor',on_delete=models.CASCADE,null=True)
+    doctor =  models.ForeignKey(User,related_name='doctor',on_delete=models.CASCADE,null=True)
     appointment_date = models.DateField()
     time_slot = models.CharField(max_length=11, choices=TIME_SLOT_CHOICES, null=True)
     token = models.CharField(max_length=20, default=generate_token, unique=True, editable=False)
