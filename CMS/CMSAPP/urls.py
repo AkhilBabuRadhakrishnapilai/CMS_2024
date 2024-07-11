@@ -84,10 +84,8 @@ urlpatterns = [
     path('appointment_info/<int:passed_id>',appointment_info),
     path('search_appointment/<str:search_appoint>',search_appointment),
     #doctor
-    path('doctor_test',testPrescribed_list)
-
-    path('changepassword/',ChangePassword.as_view()),
-     path('appointment_list', AppointmentListView.as_view()),
+    path('doctor_test',testPrescribed_list),
+    path('appointment_list', AppointmentListView.as_view()),
     path('diagnosis_list',diagnosis_list),
     path('diagnosis_info/<int:passed_id>',diagnosis_info),
     path('medPrescribed_list',medPrescribed_list),

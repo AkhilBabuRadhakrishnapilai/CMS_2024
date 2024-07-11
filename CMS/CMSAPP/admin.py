@@ -9,8 +9,8 @@ admin.site.register(Qualification)
 admin.site.register(Specialization)
 admin.site.register(User)
 admin.site.register(Doctors)
-
-
+admin.site.register(Roles)
+admin.site.register(Gender)
 admin.site.register(Supplier)
 admin.site.register(Order)
 
@@ -25,13 +25,7 @@ admin.site.register(Report)
 admin.site.register(Diagnosis)
 admin.site.register(TestPrescribed)
 admin.site.register(MedPrescribed)
-admin.site.register(Counter)
-admin.site.register(Diagnosis)
-admin.site.register(MedPrescribed)
-admin.site.register(Medicine)
 admin.site.register(Pharmacist)
-admin.site.register(patient_details)
-admin.site.register(BookAppointment)
-admin.site.register(Supplier)
+
 
 

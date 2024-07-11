@@ -51,6 +51,11 @@ class UserSerializer(serializers.ModelSerializer):
         gender = validated_data.pop('gender_id')
         role = validated_data.pop('role_id')
 
+        # password = validated_data.pop('password')
+        # if password:
+        #     hashed_password = make_password(password)
+        #     self.password = hashed_password
+
         user = User.objects.create(
             **validated_data
         )
@@ -96,6 +101,11 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 class DoctorsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Doctors
+        fields = '__all__'
+
+class DoctorSerializer(serializers.ModelSerializer):
     user_id = UserSerializer(read_only=True)
     class Meta:
         model = Doctors

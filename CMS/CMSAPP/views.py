@@ -34,6 +34,7 @@ class AppointmentListView(APIView):
             appoint_add_serializer.save()
             return JsonResponse(appoint_add_serializer.data, status=201)
         return JsonResponse(appoint_add_serializer.errors, status=400)
+    
 class Login(APIView):
     def post(self,request):
         employee = LoginSerializer(data=request.data)
@@ -41,12 +42,15 @@ class Login(APIView):
             email = employee.validated_data["email"]
             password = employee.validated_data["password"]
             print(email)
+            print(password)
             auth_user = authenticate(request,email=email,password=password)
             if auth_user is not None:
                 token = Token.objects.get(user=auth_user)
                 #for getting the user as an object
                 user_data = UserSerializer(auth_user).data
+                print(user_data)
                 print("hey hey")
+                print(token.key)
                 response ={
                     "status":status.HTTP_200_OK,
                     "message":"success",
@@ -55,6 +59,7 @@ class Login(APIView):
                         "user":user_data
                     }
                 }
+                
                 return Response (response,status = status.HTTP_200_OK)
             else:
                 response = {
@@ -721,12 +726,12 @@ def testPrescribed_list2(request):
 def testPrescribed_list1(request):
     if request.method == 'GET':
         test_prescribed_list = Doctors.objects.all()
-        test_prescribed_serializer = DoctorsSerializer(test_prescribed_list, many=True)
+        test_prescribed_serializer = DoctorSerializer(test_prescribed_list, many=True)
         return JsonResponse(test_prescribed_serializer.data, safe=False)
     
     elif request.method == 'POST':
         request_data = JSONParser().parse(request)
-        test_prescribed_add_serializer = DoctorsSerializer(data=request_data)
+        test_prescribed_add_serializer = DoctorSerializer(data=request_data)
         if test_prescribed_add_serializer.is_valid():
             test_prescribed_add_serializer.save()
             return JsonResponse(test_prescribed_add_serializer.data, status=201)
