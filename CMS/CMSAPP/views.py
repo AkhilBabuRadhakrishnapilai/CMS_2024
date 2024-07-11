@@ -546,3 +546,143 @@ class GetOp(APIView):
         opid = patient_details.objects.filter(opid=opid)
         op_serializer = PatientDetailsSerializer(opid, many=True)
         return JsonResponse(op_serializer.data, safe=False)
+
+#Doctor views
+
+@csrf_exempt
+@api_view(['GET', 'POST'])
+def list_of_test(request):
+    if request.method == "GET":
+        testing = NewTest.objects.all()
+        testing_serialize = NewTest_Serializer(testing, many=True)
+        return JsonResponse(testing_serialize.data, safe=False)
+    
+@csrf_exempt
+@api_view(['GET', 'POST'])
+def list_of_medicine(request):
+    if request.method == "GET":
+        medicine_test = Medicine.objects.all()
+        med_testing_serialize = Medicine_Serializer(medicine_test, many=True)
+        return JsonResponse(med_testing_serialize.data, safe=False)
+
+@csrf_exempt
+@api_view(['GET','POST'])
+def diagnosis_list(request):
+    if request.method == 'GET':
+        diagnosis_list = Diagnosis.objects.all()
+        diagnosis_list_serializer = DiagnosisSerializer(diagnosis_list, many=True)
+        return JsonResponse(diagnosis_list_serializer.data, safe=False)
+
+    elif request.method == 'POST':
+        request_data = JSONParser().parse(request)
+        diagnosis_add_serializer = DiagnosisSerializer(data=request_data)
+        if diagnosis_add_serializer.is_valid():
+            diagnosis_add_serializer.save()
+            return JsonResponse(diagnosis_add_serializer.data, status=201)
+        return JsonResponse(diagnosis_add_serializer.errors, status=400)
+
+
+@csrf_exempt
+@api_view(['GET','PUT','DELETE'])
+def diagnosis_info(request, passed_id):
+    try:
+        diagnosis_info = Diagnosis.objects.get(id=passed_id)
+    except Diagnosis.DoesNotExist:
+        return JsonResponse({'error': 'Diagnosis not found'}, status=404)
+
+    if request.method == 'GET':
+        diagnosis_serializer = DiagnosisSerializer(diagnosis_info)
+        return JsonResponse(diagnosis_serializer.data, safe=False)
+    
+    elif request.method == 'PUT':
+        request_data = JSONParser().parse(request)
+        diagnosis_update_serializer = DiagnosisSerializer(diagnosis_info, data=request_data)
+        if diagnosis_update_serializer.is_valid():
+            diagnosis_update_serializer.save()
+            return JsonResponse(diagnosis_update_serializer.data, status=200)
+        return JsonResponse(diagnosis_update_serializer.errors, status=400)
+    
+    elif request.method == 'DELETE':
+        diagnosis_info.delete()
+        return HttpResponse(status=204)
+
+@csrf_exempt
+@api_view(['GET','POST'])
+def testPrescribed_list(request):
+    if request.method == 'GET':
+        testPrescribed_list = TestPrescribed.objects.all()
+        test_prescribed_serializer = TestPrescribedSerializer(testPrescribed_list, many=True)
+        return JsonResponse(test_prescribed_serializer.data, safe=False)
+    
+    elif request.method == 'POST':
+        request_data = JSONParser().parse(request)
+        test_prescribed_add_serializer = TestPrescribedSerializer(data=request_data)
+        if test_prescribed_add_serializer.is_valid():
+            test_prescribed_add_serializer.save()
+            return JsonResponse(test_prescribed_add_serializer.data, status=201)
+        return JsonResponse(test_prescribed_add_serializer.errors, status=400)
+
+@csrf_exempt
+@api_view(['GET','PUT','DELETE'])
+def testPrescribed_info(request, passed_id):
+    try:
+        test_info = TestPrescribed.objects.get(id=passed_id)
+    except TestPrescribed.DoesNotExist:
+        return JsonResponse({'error': 'TestPrescribed not found'}, status=404)
+
+    if request.method == 'GET':
+        test_serializer = TestPrescribedSerializer(test_info)
+        return JsonResponse(test_serializer.data, safe=False)
+    
+    elif request.method == 'PUT':
+        request_data = JSONParser().parse(request)
+        test_update_serializer = TestPrescribedSerializer(test_info, data=request_data)
+        if test_update_serializer.is_valid():
+            test_update_serializer.save()
+            return JsonResponse(test_update_serializer.data, status=200)
+        return JsonResponse(test_update_serializer.errors, status=400)
+    
+    elif request.method == 'DELETE':
+        test_info.delete()
+        return HttpResponse(status=204)
+
+
+
+@csrf_exempt
+@api_view(['GET','POST'])
+def medPrescribed_list(request):
+    if request.method == 'GET':
+        medPrescribed_list = MedPrescribed.objects.all()
+        med_prescribed_serializer = MedPrescribedSerializer(medPrescribed_list, many=True)
+        return JsonResponse(med_prescribed_serializer.data,safe=False)
+    elif request.method == 'POST':
+        request_data = JSONParser().parse(request)
+        med_prescribed_add_serializer = MedPrescribedSerializer(data=request_data)
+        if med_prescribed_add_serializer.is_valid():
+            med_prescribed_add_serializer.save()
+            return JsonResponse(med_prescribed_add_serializer.data, status=201)
+        return JsonResponse(med_prescribed_add_serializer.errors,status=400)
+
+@csrf_exempt
+@api_view(['GET','PUT','DELETE'])
+def medPrescribed_info(request, passed_id):
+    try:
+        med_info = MedPrescribed.objects.get(id=passed_id)
+    except MedPrescribed.DoesNotExist:
+        return JsonResponse({'error': 'MedPrescribed not found'}, status=404)
+
+    if request.method == 'GET':
+        med_serializer = MedPrescribedSerializer(med_info)
+        return JsonResponse(med_serializer.data, safe=False)
+    
+    elif request.method == 'PUT':
+        request_data = JSONParser().parse(request)
+        med_update_serializer = MedPrescribedSerializer(med_info, data=request_data)
+        if med_update_serializer.is_valid():
+            med_update_serializer.save()
+            return JsonResponse(med_update_serializer.data, status=200)
+        return JsonResponse(med_update_serializer.errors, status=400)
+    
+    elif request.method == 'DELETE':
+        med_info.delete()
+        return HttpResponse(status=204)

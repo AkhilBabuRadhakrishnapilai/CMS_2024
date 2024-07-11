@@ -41,5 +41,16 @@ urlpatterns = [
     path('MiscellaneousItem', MiscellaneousItem_list, name='MiscellaneousItem_list'),
     path('MiscellaneousItem/<int:passed_id>', MiscellaneousItem_edit, name='MiscellaneousItem_edit'),
     path('Medicine', Medicine_list, name='Medicine_list'),
-    path('Medicine/<int:passed_id>', Medicine_edit, name='Medicine_edit')
+    path('Medicine/<int:passed_id>', Medicine_edit, name='Medicine_edit'),
+
+    #doctor url
+
+    path('diagnosis_list',diagnosis_list),
+    path('diagnosis_info/<int:passed_id>',diagnosis_info),
+    path('testPrescribed_list',testPrescribed_list),
+    path('testPrescribed_info/<int:passed_id>',testPrescribed_info),
+    path('medPrescribed_list',medPrescribed_list),
+    path('medPrescribed_info/<int:passed_id>',medPrescribed_info),
+    path('list_of_test',list_of_test),
+    path('list_of_medicine',list_of_medicine),
 ]

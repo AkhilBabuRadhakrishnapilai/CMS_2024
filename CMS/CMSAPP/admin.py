@@ -18,3 +18,9 @@ admin.site.register(Medicine)
 admin.site.register(patient_details)
 admin.site.register(BookAppointment)
 admin.site.register(Counter)
+
+#doctor admin
+
+admin.site.register(Diagnosis)
+admin.site.register(TestPrescribed)
+admin.site.register(MedPrescribed)
