@@ -42,4 +42,31 @@ urlpatterns = [
     path('MiscellaneousItem/<int:passed_id>', MiscellaneousItem_edit, name='MiscellaneousItem_edit'),
     path('Medicine', Medicine_list, name='Medicine_list'),
     path('Medicine/<int:passed_id>', Medicine_edit, name='Medicine_edit')
+    path('changepassword/',ChangePassword.as_view()),
+    path('test_list', list_of_test),
+    path('test_list/<int:passed_id>',testing_edit),
+    path('live',live),
+    path('details_list', list_of_values),
+    path('list_of_values1', list_of_values1),
+    path('details_list/<int:passed_id>', values_edit),
+    path('search_test/<str:search_test>',search_test),
+    path('diagnosis_list',diagnosis_list),
+    path('diagnosis_info/<int:passed_id>',diagnosis_info),
+    path('testPrescribed_list',testPrescribed_list),
+    path('testPrescribed_info/<int:passed_id>',testPrescribed_info),
+    path('isactivetruelist',testPrescribed_isactivetruelist),
+    path('isactivefalselist',testPrescribed_isactivefalselist),
+    path('isactivetrue/<int:passed_id>',testPrescribed_isactivetrue),
+    path('isactivefalse/<int:passed_id>',testPrescribed_isactivefalse),
+    #receptionist
+    path('patient_list',patient_list),
+    path('patient_info/<int:passed_id>',patient_info),
+    path('search_patient/<int:search_Patient>',search_patient),
+    path('search_info/<str:search_Patient>',search_patient),
+    path('appointment_list',appointment_list),
+    path('appointment_info/<int:passed_id>',appointment_info),
+    path('search_appointment/<str:search_appoint>',search_appointment),
+    #doctor
+    path('doctor_test',testPrescribed_list)
+
 ]
