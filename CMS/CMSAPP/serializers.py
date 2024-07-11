@@ -424,7 +424,7 @@ class MedPrescribedSerializer(serializers.ModelSerializer):
     med = serializers.PrimaryKeyRelatedField(queryset=Diagnosis.objects.all())
     patient = serializers.SerializerMethodField()
     med_list = serializers.PrimaryKeyRelatedField(queryset=Medicine.objects.all(), many=True, write_only=True)
-    med_list_details = Medicine_Serializer(many=True, read_only=True, source='med_list')
+    med_list_details = MedSerializer(many=True, read_only=True, source='med_list')
 
     class Meta:
         model = MedPrescribed
@@ -453,5 +453,5 @@ class MedPrescribedSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['med'] = DiagnosisSerializer(instance.med).data
         representation['patient'] = representation['med']['appointment']['patient']
-        representation['med_list'] = Medicine_Serializer(instance.med_list.all(), many=True).data
+        representation['med_list'] = MedSerializer(instance.med_list.all(), many=True).data
         return representation

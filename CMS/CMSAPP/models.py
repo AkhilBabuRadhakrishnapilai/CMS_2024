@@ -553,27 +553,7 @@ class LiveTest(models.Model):
     
 
 #doctor models
-
-class Diagnosis(models.Model):
-    appointment = models.ForeignKey(BookAppointment, on_delete=models.CASCADE)
-    medical_history = models.CharField(max_length=30, null=True)
-    symptoms = models.CharField(max_length=100, null=True)
-    diagnosis = models.CharField(max_length=100, null=True)
-    doctor_note = models.CharField(max_length=100, null=True)
-    next_visit = models.DateField(null=True, blank=True)
-    def __str__(self):
-        return f"Diagnosis for {self.appointment}"
-    
-
-class TestPrescribed(models.Model):
-    labtests = models.ForeignKey(Diagnosis, on_delete=models.CASCADE)
-    date_of_prescribition = models.DateField(null=False)
-    lab_tests = models.ManyToManyField(NewTest)
-
-
-    def __str__(self):
-        return f"TestPrescribed for {self.labtests} on {self.date_of_prescribition}"
-    
+        
 
 class MedPrescribed(models.Model):
     med = models.ForeignKey(Diagnosis, on_delete=models.CASCADE)

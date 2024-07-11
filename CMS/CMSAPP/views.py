@@ -1120,7 +1120,7 @@ def list_of_test(request):
 def list_of_medicine(request):
     if request.method == "GET":
         medicine_test = Medicine.objects.all()
-        med_testing_serialize = Medicine_Serializer(medicine_test, many=True)
+        med_testing_serialize = MedSerializer(medicine_test, many=True)
         return JsonResponse(med_testing_serialize.data, safe=False)
 
 @csrf_exempt

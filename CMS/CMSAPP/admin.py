@@ -4,8 +4,6 @@ from .models import *
 admin.site.register(patient_details)
 admin.site.register(BookAppointment)
 admin.site.register(NewTest)
-admin.site.register(TestPrescribed)
-admin.site.register(Diagnosis)
 admin.site.register(LiveTest)
 admin.site.register(Qualification)
 admin.site.register(Specialization)
