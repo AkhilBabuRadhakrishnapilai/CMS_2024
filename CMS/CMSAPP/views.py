@@ -19,6 +19,7 @@ class Login(APIView):
         if employee.is_valid:
             email = employee.validated_data["email"]
             password = employee.validated_data["password"]
+            print(email)
             auth_user = authenticate(request,email=email,password=password)
             if auth_user is not None:
                 token = Token.objects.get(user=auth_user)
@@ -302,4 +303,129 @@ def Medicine_edit(request, passed_id):
         Medicine_details.save()
         return JsonResponse({'message': 'Medicine deactivated successfully'}, status=204)
 
+@api_view(['GET'])
+def generate_supplier_report(request):
+    suppliers = Supplier.objects.filter(is_active=True)
+    supplier_data = SupplierSerializer(suppliers, many=True).data
+    report = Report.objects.create(
+        report_type='SUPPLIER',
+        data=json.dumps(supplier_data)
+    )
+    return JsonResponse(ReportSerializer(report).data, status=201)
+
+@api_view(['GET'])
+def generate_order_report(request):
+    orders = Order.objects.filter(is_active=True)
+    order_data = OrderSerializer(orders, many=True).data
+    report = Report.objects.create(
+        report_type='ORDER',
+        data=json.dumps(order_data)
+    )
+    return JsonResponse(ReportSerializer(report).data, status=201)
+
+@api_view(['GET'])
+def generate_medicine_report(request):
+    medicines = Medicine.objects.filter(is_active=True)
+    medicine_data = MedSerializer(medicines, many=True).data
+    report = Report.objects.create(
+        report_type='MEDICINE',
+        data=json.dumps(medicine_data)
+    )
+    return JsonResponse(ReportSerializer(report).data, status=201)
+@api_view(['GET'])
+def generate_equipment_report(request):
+    equipment = Equipment.objects.filter(is_active=True)
+    equipment_data = EquipmentSerializer(equipment, many=True).data
+    report = Report.objects.create(
+        report_type='EQUIPMENT',
+        data=json.dumps(equipment_data)
+    )
+    return JsonResponse(ReportSerializer(report).data, status=201)
+@api_view(['GET'])
+def generate_miscellaneousitem_report(request):
+    miscellaneousitem = MiscellaneousItem.objects.filter(is_active=True)
+    miscellaneousitem_data = MiscellaneousItemSerializer(miscellaneousitem, many=True).data
+    report = Report.objects.create(
+        report_type='MISCELLANEOUSITEM',
+        data=json.dumps(miscellaneousitem_data)
+    )
+    return JsonResponse(ReportSerializer(report).data, status=201)
+
+@api_view(['GET'])
+def get_report(request):
+   
+        report = Report.objects.all()
+        report_serializer = ReportSerializer(report, many=True)
+        return JsonResponse(report_serializer.data, safe=False)
+
+
+
+# @api_view(['GET'])
+# def export_report_csv(request, report_id):
+#     try:
+#         report = Report.objects.get(id=report_id)
+#     except Report.DoesNotExist:
+#         return JsonResponse({'error': 'Report not found'}, status=404)
+    
+#     report_data = json.loads(report.data)
+#     print("Report Data:", report_data)  # Debug output to see the structure of report_data
+
+#     response = HttpResponse(content_type='text/csv')
+#     response['Content-Disposition'] = f'attachment; filename="{report.get_report_type_display()}_{report.generated_at}.csv"'
+
+#     writer = csv.writer(response)
+    
+#     if report.report_type == 'SUPPLIER':
+#         writer.writerow(['ID', 'Name', 'Address', 'Phone', 'Email', 'Is Active'])
+#         for item in report_data:
+#             writer.writerow([
+#                 item['id'], 
+#                 item['name'], 
+#                 item['address'], 
+#                 item['phone'], 
+#                 item['email'], 
+#                 item['is_active']
+#             ])
+    
+#     elif report.report_type == 'ORDER':
+#         writer.writerow(['ID', 'Supplier ID', 'Order Date', 'Expected Delivery Date', 'Status', 'Supplier Name', 'Supplier Address', 'Supplier Phone', 'Supplier Email'])
+#         for item in report_data:
+#             supplier = item['suppliee']
+#             writer.writerow([
+#                 item['id'], 
+#                 item['supplier'], 
+#                 item['order_date'], 
+#                 item['expected_delivery_date'], 
+#                 item['status'], 
+#                 supplier['name'],
+#                 supplier['address'],
+#                 supplier['phone'],
+#                 supplier['email'],
+#             ])
+    
+#     elif report.report_type == 'MEDICINE':
+#         writer.writerow(['ID', 'Name', 'Generic Name', 'Category', 'Type', 'Description', 'Storage Requirements', 'Stock', 'Unit Price', 'Date Created', 'Expiry Date', 'Reorder Level', 'Supplier ID', 'Supplier Name', 'Supplier Address', 'Supplier Phone', 'Supplier Email'])
+#         for item in report_data:
+#             supplier = item['suppliee']
+#             writer.writerow([
+#                 item['id'], 
+#                 item['name'], 
+#                 item['generic_name'], 
+#                 item['category'], 
+#                 item['type_medicine'], 
+#                 item['description'], 
+#                 item['storage_requirements'], 
+#                 item['stock'], 
+#                 item['unit_price'], 
+#                 item['date_created'], 
+#                 item['expiry_date'], 
+#                 item['reorder_level'], 
+#                 item['supplier'], 
+#                 supplier['name'],
+#                 supplier['address'],
+#                 supplier['phone'],
+#                 supplier['email'],
+#             ])
+    
+#     return response
 

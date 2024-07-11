@@ -1,4 +1,5 @@
 from django.db import models
+import json
 from .managers import UserManager
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin,Group,Permission
@@ -179,4 +180,101 @@ class Medicine(models.Model):
     is_active =models.BooleanField(default=True,null=False)
     def __str__(self):
         return self.name
+class Report(models.Model):
+    REPORT_TYPE_CHOICES = (
+        ('SUPPLIER', 'Supplier Report'),
+        ('ORDER', 'Order Report'),
+        ('MEDICINE', 'Medicine Report'),
+        ('MISCELLANEOUSITEM', 'MiscellaneousItem Report'),
+        ('EQUIPMENT', 'Equipment Report'),
+    )
+
+    report_type = models.CharField(max_length=50, choices=REPORT_TYPE_CHOICES)
+    generated_at = models.DateTimeField(auto_now_add=True)
+    data = models.TextField()  # This can store JSON data as a string
+
+    def __str__(self):
+        return f"{self.get_report_type_display()} generated at {self.generated_at}"
+
+    def generate_report(self):
+     data = []
+
+     if self.report_type == 'SUPPLIER':
+        suppliers = Supplier.objects.filter(is_active=True)
+        for supplier in suppliers:
+            data.append({
+                'id': supplier.id,
+                'name': supplier.name,
+                'address': supplier.address,
+                'phone': supplier.phone,
+                'email': supplier.email,
+                'is_active': supplier.is_active,
+            })
+    
+     elif self.report_type == 'ORDER':
+        orders = Order.objects.filter(is_active=True)
+        for order in orders:
+            data.append({
+                'id': order.id,
+                'supplier': order.supplier.id,
+                'order_date': order.order_date.strftime('%Y-%m-%d'),
+                'expected_delivery_date': order.expected_delivery_date.strftime('%Y-%m-%d'),
+                'status': order.status,
+                'is_active': order.is_active,
+            })
+    
+     elif self.report_type == 'MEDICINE':
+        medicines = Medicine.objects.filter(is_active=True)
+        for medicine in medicines:
+            data.append({
+                'id': medicine.id,
+                'name': medicine.name,
+                'generic_name': medicine.generic_name,
+                'category': medicine.category,
+                'type_medicine': medicine.type_medicine,
+                'description': medicine.description,
+                'storage_requirements': medicine.storage_requirements,
+                'stock': medicine.stock,
+                'unit_price': str(medicine.unit_price),  # Convert Decimal to str for JSON serialization
+                'date_created': medicine.date_created.strftime('%Y-%m-%d'),
+                'expiry_date': medicine.expiry_date.strftime('%Y-%m-%d'),
+                'reorder_level': medicine.reorder_level,
+                'supplier': medicine.supplier.id,
+                'is_active': medicine.is_active,
+            })
+     elif self.report_type == 'MISCELLANEOUSITEM':
+        miscellaneousitem = MiscellaneousItem.objects.filter(is_active=True)
+        for m in miscellaneousitem:
+            data.append({
+                'id': m.id,
+                'name': m.name,
+                'description': m.description,
+                'supplier': m.supplier.id,
+                
+                'quantity': m.quantity,
+                
+                'reorder_level': m.reorder_level,
+                
+                'is_active': m.is_active,
+            })
+     elif self.report_type == 'EQUIPMENT':
+        equipment = Equipment.objects.filter(is_active=True)
+        for e in equipment:
+            data.append({
+                'id': e.id,
+                'name': e.name,
+                'description': e.description,
+                'supplier': e.supplier.id,
+                
+                'quantity': e.quantity,
+                
+                'reorder_level': e.reorder_level,
+                'purchase_date':e.purchase_date,
+                'warranty_expiry':e.warranty_expiry,
+                
+            })
+
+
+     self.data = json.dumps(data)
+     self.save()
     

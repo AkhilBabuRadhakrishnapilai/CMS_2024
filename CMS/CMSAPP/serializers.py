@@ -198,3 +198,7 @@ class MedSerializer(serializers.ModelSerializer):
         rep['suppliee'] = SupplierSerializer(instance.supplier).data
 
         return rep
+class ReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report
+        fields = '__all__'
