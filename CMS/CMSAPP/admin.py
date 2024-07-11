@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import *
+from .models import patient_details
 # Register your models here.
 admin.site.register(patient_details)
 admin.site.register(BookAppointment)
@@ -20,3 +21,4 @@ admin.site.register(Equipment)
 admin.site.register(MiscellaneousItem)
 admin.site.register(Medicine)
 admin.site.register(Counter)
+admin.site.register(Report)
