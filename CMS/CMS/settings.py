@@ -95,9 +95,9 @@ WSGI_APPLICATION = 'CMS.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'cms_2024',
+        'NAME': 'cmsint_2024',
         'USER':'root',
-        'PASSWORD':'Emma123#*',
+        'PASSWORD':'808620',
         'HOST':'localhost',
         'PORT':'3306'
     }
