@@ -86,4 +86,12 @@ urlpatterns = [
     #doctor
     path('doctor_test',testPrescribed_list)
 
+    path('changepassword/',ChangePassword.as_view()),
+     path('appointment_list', AppointmentListView.as_view()),
+    path('diagnosis_list',diagnosis_list),
+    path('diagnosis_info/<int:passed_id>',diagnosis_info),
+    path('medPrescribed_list',medPrescribed_list),
+    path('medPrescribed_info/<int:passed_id>',medPrescribed_info),
+    path('pharmacist',pharmacist_data),
+    path('pharma_bill/<int:pharmacist_id>',generate_bill)
 ]
