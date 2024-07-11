@@ -21,3 +21,9 @@ admin.site.register(MiscellaneousItem)
 admin.site.register(Medicine)
 admin.site.register(Counter)
 admin.site.register(Report)
+
+#doctor admin
+
+admin.site.register(Diagnosis)
+admin.site.register(TestPrescribed)
+admin.site.register(MedPrescribed)
