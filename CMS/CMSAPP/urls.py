@@ -31,7 +31,6 @@ urlpatterns = [
     path('specialization',SpecializationList.as_view()),
     path('doctors',DoctorList.as_view()),
     path('token',GetToken.as_view()),
-    path('changepassword/',ChangePassword.as_view()),
     path('suppliers', supplier_list, name='supplier-list'),
     path('suppliers/<int:passed_id>', supplier_edit, name='supplier-edit'),
     path('orders', order_list, name='order_list'),
@@ -41,8 +40,7 @@ urlpatterns = [
     path('MiscellaneousItem', MiscellaneousItem_list, name='MiscellaneousItem_list'),
     path('MiscellaneousItem/<int:passed_id>', MiscellaneousItem_edit, name='MiscellaneousItem_edit'),
     path('Medicine', Medicine_list, name='Medicine_list'),
-    path('Medicine/<int:passed_id>', Medicine_edit, name='Medicine_edit')
-    path('changepassword/',ChangePassword.as_view()),
+    path('Medicine/<int:passed_id>', Medicine_edit, name='Medicine_edit'),
     path('test_list', list_of_test),
     path('test_list/<int:passed_id>',testing_edit),
     path('live',live),
